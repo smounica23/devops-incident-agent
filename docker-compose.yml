@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+
+  # ── FastAPI ──────────────────────────────────────────────
+  fastapi:
+    build: .
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - incident_net
+
+  # ── Celery Worker P1 ─────────────────────────────────────
+  celery-worker-p1:
+    build: .
+    container_name: celery-worker-p1
+    command: celery -A worker.celery_app worker -Q p1_incidents -c 3 --loglevel=info -n worker-p1@%h
+    env_file: .env
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/app
+    networks:
+      - incident_net
+
+  # ── Celery Worker P2 ─────────────────────────────────────
+  celery-worker-p2:
+    build: .
+    container_name: celery-worker-p2
+    command: celery -A worker.celery_app worker -Q p2_incidents -c 2 --loglevel=info -n worker-p2@%h
+    env_file: .env
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/app
+    networks:
+      - incident_net
+
+  # ── Celery Worker P3 ─────────────────────────────────────
+  celery-worker-p3:
+    build: .
+    container_name: celery-worker-p3
+    command: celery -A worker.celery_app worker -Q p3_incidents -c 1 --loglevel=info -n worker-p3@%h
+    env_file: .env
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/app
+    networks:
+      - incident_net
+
+  # ── Celery Beat ──────────────────────────────────────────
+  celery-beat:
+    build: .
+    container_name: celery-beat
+    command: celery -A worker.celery_app beat --loglevel=info
+    env_file: .env
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+    networks:
+      - incident_net
+
+  # ── Flower ───────────────────────────────────────────────
+  flower:
+    build: .
+    container_name: flower
+    command: celery -A worker.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    env_file: .env
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+    networks:
+      - incident_net
+
+  # ── PostgreSQL ───────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_DB: incidents
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d incidents"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - incident_net
+
+  # ── Redis ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - incident_net
+
+  # ── Elasticsearch ────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=incident-cluster
+      - bootstrap.memory_lock=true
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    networks:
+      - incident_net
+
+  # ── Kibana ───────────────────────────────────────────────
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - KIBANA_SYSTEM_PASSWORD=admin123
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - incident_net
+
+  # ── Logstash ─────────────────────────────────────────────
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./scripts/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - incident_net
+
+networks:
+  incident_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  es_data:

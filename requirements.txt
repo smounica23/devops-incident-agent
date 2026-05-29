@@ -1,0 +1,36 @@
+# Web framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# LangGraph + LangChain
+langgraph
+langchain
+langchain-anthropic
+langsmith
+
+# Celery + Redis
+celery[redis]
+flower
+redis
+
+# Database
+sqlalchemy
+alembic
+psycopg2-binary
+
+# Elasticsearch
+elasticsearch
+
+# Pydantic
+pydantic
+pydantic-settings
+
+# HTTP client
+httpx
+aiohttp
+
+# Utilities
+python-dotenv
+tenacity
+structlog
