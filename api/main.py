@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from api.routers.alerts import router
 
 app = FastAPI(
     title="DevOps Incident Response Agent",
@@ -7,6 +7,7 @@ app = FastAPI(
     version="0.1.0"
 )
 
+app.include_router(router, prefix="/api/v1")
 
 @app.get("/health")
 async def get_health():

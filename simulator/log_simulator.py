@@ -4,10 +4,8 @@ import time
 from datetime import datetime, timedelta, timezone
 from elasticsearch import Elasticsearch
 
-# Connect to Elasticsearch
 es = Elasticsearch("http://localhost:9200")
 
-# Index name — matches our logstash config
 INDEX_NAME = "incidents-logs-" + datetime.now().strftime("%Y.%m.%d")
 
 def create_index():
@@ -41,7 +39,7 @@ def create_index():
     
     es.indices.create(index=INDEX_NAME, mappings=mappings)
     print(f"Created index: {INDEX_NAME}")
-    
+
 def generate_log(
     service,
     level,
@@ -114,7 +112,6 @@ def generate_scenario_nullpointer(base_time):
     """
     logs = []
 
-    # ── Normal logs before deployment (14:00 - 14:15) ────
     for i in range(20):
         timestamp = base_time + timedelta(minutes=random.randint(0, 14))
         logs.append(generate_log(
@@ -127,7 +124,6 @@ def generate_scenario_nullpointer(base_time):
             endpoint="/api/v1/payments"
         ))
 
-    # ── Deployment log at 14:15 ───────────────────────────
     logs.append(generate_log(
         service="payment-service",
         level="INFO",
@@ -135,7 +131,6 @@ def generate_scenario_nullpointer(base_time):
         timestamp=base_time + timedelta(minutes=15),
     ))
 
-    # ── Normal logs right after deploy (14:15 - 14:22) ───
     for i in range(10):
         timestamp = base_time + timedelta(minutes=random.randint(15, 21))
         logs.append(generate_log(
@@ -148,7 +143,6 @@ def generate_scenario_nullpointer(base_time):
             endpoint="/api/v1/payments"
         ))
 
-    # ── ROOT CAUSE: NullPointerException spike (14:22+) ──
     for i in range(50):
         timestamp = base_time + timedelta(
             minutes=22,
@@ -166,7 +160,6 @@ def generate_scenario_nullpointer(base_time):
             endpoint="/api/v1/payments"
         ))
 
-    # ── SYMPTOM 1: Request timeouts (14:25+) ─────────────
     for i in range(30):
         timestamp = base_time + timedelta(
             minutes=25,
@@ -183,7 +176,6 @@ def generate_scenario_nullpointer(base_time):
             endpoint="/api/v1/payments"
         ))
 
-    # ── SYMPTOM 2: DB connection pool exhausted (14:28+) ─
     for i in range(20):
         timestamp = base_time + timedelta(
             minutes=28,
@@ -201,7 +193,6 @@ def generate_scenario_nullpointer(base_time):
             endpoint="/api/v1/payments"
         ))
 
-    # ── SYMPTOM 3: Circuit breaker opens (14:35+) ────────
     for i in range(10):
         timestamp = base_time + timedelta(
             minutes=35,
@@ -218,7 +209,6 @@ def generate_scenario_nullpointer(base_time):
             endpoint="/api/v1/payments"
         ))
 
-    # ── SYMPTOM 4: Downstream order-service failures ─────
     for i in range(15):
         timestamp = base_time + timedelta(
             minutes=30,
@@ -258,10 +248,8 @@ def run_simulator():
     print("Starting log simulator...")
     print(f"Target index: {INDEX_NAME}")
     
-    # Create index with mappings
     create_index()
     
-    # Base time — incident happened today at 14:00
     base_time = datetime.now(timezone.utc).replace(
         hour=14, minute=0, second=0, microsecond=0
     )
