@@ -250,9 +250,7 @@ def run_simulator():
     
     create_index()
     
-    base_time = datetime.now(timezone.utc).replace(
-        hour=14, minute=0, second=0, microsecond=0
-    )
+    base_time = datetime.now(timezone.utc) - timedelta(minutes=30)
     
     print("\nGenerating Scenario 1: NullPointerException...")
     scenario1_logs = generate_scenario_nullpointer(base_time)

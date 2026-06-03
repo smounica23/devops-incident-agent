@@ -34,3 +34,4 @@ aiohttp
 python-dotenv
 tenacity
 structlog
+elasticsearch==8.13.0

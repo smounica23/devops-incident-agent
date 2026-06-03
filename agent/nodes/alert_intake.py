@@ -28,10 +28,6 @@ def alert_intake(state: IncidentState) -> dict:
     raw_severity = alert_payload.get("severity", "medium")
     affected_service = alert_payload.get("affected_service")
     environment = alert_payload.get("environment", "unknown")
-    source = alert_payload.get("source", "monitoring_system")
-
-    error_message = alert_payload.get("error_message")
-
     normalized_severity = SEVERITY_MAP.get(
         str(raw_severity).strip().lower(),
         "P2"
@@ -43,7 +39,7 @@ def alert_intake(state: IncidentState) -> dict:
         alert_timestamp = datetime.now(timezone.utc).isoformat()
 
     current_status = "investigating"
-    
+
     logger.info(f"Alert intake - incident: {alert_id}, service: {affected_service}, severity: {normalized_severity}")
 
     return {
