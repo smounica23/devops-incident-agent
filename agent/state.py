@@ -22,6 +22,10 @@ class IncidentState(TypedDict):
     suspected_pr : Optional[str]
     root_cause_summary : Optional[str]
     confidence_score : Optional[float]
+    root_cause_file   : Optional[str]
+    root_cause_line   : Optional[int]
+    root_cause_type   : Optional[str]
+    fix_hint          : Optional[str]
 
 
     fix_plan :  Optional[dict]
