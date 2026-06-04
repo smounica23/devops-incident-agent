@@ -19,6 +19,7 @@ class IncidentState(TypedDict):
 
     suspected_service : Optional[str]
     suspected_commit : Optional[str]
+    changed_files : Optional[dict]
     suspected_pr : Optional[str]
     root_cause_summary : Optional[str]
     confidence_score : Optional[float]

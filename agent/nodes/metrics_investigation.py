@@ -2,8 +2,6 @@ from agent.state import IncidentState
 
 def metrics_investigation(state: IncidentState) -> dict:
 
-    affected_service = state.get("affected_service")
-
     metrics_evidence = {
         "error_rate_percent": 45.3,
         "error_rate_before_deploy": 0.1,
