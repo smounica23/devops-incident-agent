@@ -165,6 +165,17 @@ services:
         condition: service_healthy
     networks:
       - incident_net
+  
+  github-mcp:
+    image: ghcr.io/github/github-mcp-server:latest
+    container_name: github-mcp
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+    command: ["http", "--port", "8080"]
+    ports:
+      - "8080:8080"
+    networks:
+      - incident_net
 
 networks:
   incident_net:
