@@ -8,7 +8,7 @@ An end-to-end agentic AI system that automatically investigates production incid
 
 ## Architecture
 
-[Add architecture diagram here]
+![Architecture](docs/architecture.png)
 
 ## How It Works
 
