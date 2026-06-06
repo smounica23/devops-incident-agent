@@ -14,7 +14,6 @@ def branch_and_pr(state: IncidentState) -> dict:
 
     repo = g.get_repo(f"{os.getenv('GITHUB_REPO_OWNER')}/{os.getenv('GITHUB_TARGET_REPO')}")
     
-    # Step 1 — create branch
     branch_name = f"fix/INC-{incident_id}-null-check"
     main_sha = repo.get_branch("main").commit.sha
     repo.create_git_ref(
@@ -22,7 +21,6 @@ def branch_and_pr(state: IncidentState) -> dict:
         sha=main_sha
     )
 
-    # Step 2 — commit each changed file
     for file_path, file_content in changed_files.items():
         existing_file = repo.get_contents(file_path, ref="main")
         repo.update_file(
@@ -33,7 +31,6 @@ def branch_and_pr(state: IncidentState) -> dict:
             branch=branch_name
         )
 
-    # Step 3 — create PR with rich body
     pr_body = f"""
 ## 🚨 Auto-generated Fix — Incident {incident_id}
 
