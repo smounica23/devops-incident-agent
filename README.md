@@ -138,5 +138,3 @@ Supports up to 5 concurrent incidents with priority routing:
 - **Auto PR creation** — real GitHub branch + commit + PR
 - **Human-in-the-loop** — Teams approval before merge
 - **Full observability** — LangSmith traces every node
-
-## Screenshots
