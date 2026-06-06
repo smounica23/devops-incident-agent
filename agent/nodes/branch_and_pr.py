@@ -5,9 +5,11 @@ import os
 g = Github(os.getenv("GITHUB_TOKEN"))
 
 def branch_and_pr(state: IncidentState) -> dict:
-
+    print(">>> branch_and_pr node started")
     incident_id = state.get("incident_id")
     changed_files = state.get("changed_files") or {}
+    print(f">>> incident_id: {incident_id}")
+    print(f">>> changed_files keys: {list(changed_files.keys())}")
     root_cause_summary = state.get("root_cause_summary")
     suspected_commit = state.get("suspected_commit")
     fix_plan = state.get("fix_plan", {})

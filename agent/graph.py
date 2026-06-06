@@ -17,9 +17,19 @@ from agent.nodes.confluence_documentation import confluence_documentation
 from agent.nodes.teams_notification import teams_notification
 
 
-def should_retry(state:IncidentState):
-    if state.get("confidence_score", 10) < 6 and state.get("retry_count", 0) < 2:
+def should_retry(state: IncidentState):
+    confidence = state.get("confidence_score")
+    retry_count = state.get("retry_count", 0)
+    
+    if confidence is None:
+        return "complete"
+    
+    if confidence < 0.6 and retry_count < 2:
         return "retry"
+    
+    if confidence < 0.6 and retry_count >= 2:
+        return "escalate"
+    
     return "complete"
 
 def humanApprovalStatus(state: IncidentState):
@@ -65,7 +75,9 @@ def build_workflow():
 
     graph.add_conditional_edges("root_cause_reasoning", should_retry, {
         "retry" : "log_investigation",
-        "complete": "fix_planner"
+        "complete": "fix_planner",
+        "escalate" : "escalate"
+
     })
 
     graph.add_edge("fix_planner", "code_fix")
