@@ -121,16 +121,16 @@ Supports up to 5 concurrent incidents with priority routing:
 ## Screenshots
 
 ### LangSmith Trace
-[Add LangSmith screenshot]
+![LangSmith Trace](docs/langsmith-trace.png)
 
 ### GitHub PR
-[Add PR screenshot]
+![GitHub PR](docs/github-pr.png)
 
 ### Teams Notification
-[Add webhook.site screenshot]
+![Teams Notification](docs/teams-notification.png)
 
 ### Kibana Dashboard
-[Add Kibana screenshot]
+![Kibana Dashboard](docs/kibana-dashboard.png)
 
 - **Priority queues** — P1/P2/P3 incidents processed separately
 - **Real ELK queries** — actual log analysis, not mocks
